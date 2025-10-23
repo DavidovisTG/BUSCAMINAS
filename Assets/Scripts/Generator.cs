@@ -1,0 +1,146 @@
+
+using System.Runtime.CompilerServices;
+using UnityEngine;
+
+public class Generator : MonoBehaviour
+{
+
+    [SerializeField] private GameObject cell;
+    [SerializeField] private int height, width, bombsCount;
+    [SerializeField] private GameObject[][] cellMatrix;
+
+
+    public static Generator instance;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private void Start()
+    {
+        instance = this;
+    }
+
+
+
+    public void setWidth(int width)
+    {
+        this.width = width;
+    }
+
+    public void setHeight(int height)
+    {
+        this.height = height;
+    }
+
+    public void setBombsCount(int bombsNumber)
+    {
+        this.bombsCount = bombsNumber;
+    }
+
+
+    public int Validate()
+    {
+        int errorCode = 0;
+        if (width <= 1) errorCode += 4;
+        if (height <= 1)errorCode += 2;
+        if (bombsCount <= 0 || bombsCount >= width * height) errorCode += 1;
+
+        return errorCode;
+    }
+
+
+    public void Generate()
+    {
+        cellMatrix = new GameObject[width][];
+        for (int i = 0; i < cellMatrix.Length; i++)
+        {
+            cellMatrix[i] = new GameObject[height];
+        } 
+        for (int j = 0; j < height; j++)
+            for (int i = 0; i < width; i++) {
+
+                cellMatrix[i][j] = Instantiate(cell, new Vector3(i, j, 0), Quaternion.identity);
+                cellMatrix[i][j].GetComponent<Cell>().setX(i);
+                cellMatrix[i][j].GetComponent<Cell>().setY(j);
+
+            }
+
+        Camera.main.transform.position = new Vector3((float)(width / 2f -0.5f), (float) (height / 2f -0.5f), -10);
+
+        for (int i = 0;i < bombsCount; i++)
+        {
+            int x = Random.Range(0, width);
+            int y = Random.Range(0, height);
+            if (!cellMatrix[x][y].GetComponent<Cell>().hasBomb())
+                cellMatrix[x][y].GetComponent<Cell>().setBomb(true);
+            else
+                i--;
+            //cellMatrix[Random.Range(0, width)][Random.Range(0, height)].GetComponent<SpriteRenderer>().material.color = Color.red;
+        }
+
+    }
+
+    public int GetBombsAround(int x, int y)
+    {
+        int cont = 0;
+        //ARRIBA IZQUIERDA
+        if (x > 0 && y < height - 1 && cellMatrix[x - 1][y + 1].GetComponent<Cell>().hasBomb())
+            cont++;
+        //ARRIBA CENTRO
+        if (y < height - 1 && cellMatrix[x][y + 1].GetComponent<Cell>().hasBomb())
+            cont++;
+        //ARRIBA DERECHA
+        if (x < width - 1 && y < height - 1 && cellMatrix[x + 1][y + 1].GetComponent<Cell>().hasBomb())
+            cont++;
+        //CENTRO IZQUIERDA
+        if (x > 0 && cellMatrix[x - 1][y].GetComponent<Cell>().hasBomb())
+            cont++;
+        //CENTRO DERECHA
+        if (x < width - 1 && cellMatrix[x + 1][y].GetComponent<Cell>().hasBomb())
+            cont++;
+        //ABAJO IZQUIERDA
+        if (x > 0 && y > 0 && cellMatrix[x - 1][y - 1].GetComponent<Cell>().hasBomb())
+            cont++;
+        //ABAJO CENTRO
+        if (y > 0 && cellMatrix[x][y - 1].GetComponent<Cell>().hasBomb())
+            cont++;
+        //ABAJO DERECHA
+        if (x < width - 1 && y > 0 && cellMatrix[x + 1][y - 1].GetComponent<Cell>().hasBomb())
+            cont++;
+
+        return cont;
+    }
+
+    public void CheckPiecesAround(int x, int y)
+    {
+        //ARRIBA IZQUIERDA
+        if (x > 0 && y < height - 1)
+            cellMatrix[x - 1][y + 1].GetComponent<Cell>().DrawBomb();
+        //ARRIBA CENTRO
+        if (y < height - 1)
+            cellMatrix[x][y + 1].GetComponent<Cell>().DrawBomb();
+        //ARRIBA DERECHA
+        if (x < width - 1 && y < height - 1)
+            cellMatrix[x + 1][y + 1].GetComponent<Cell>().DrawBomb();
+        //CENTRO IZQUIERDA
+        if (x > 0)
+            cellMatrix[x - 1][y].GetComponent<Cell>().DrawBomb();
+        //CENTRO DERECHA
+        if (x < width - 1)
+            cellMatrix[x + 1][y].GetComponent<Cell>().DrawBomb();
+        //ABAJO IZQUIERDA
+        if (x > 0 && y > 0)
+            cellMatrix[x - 1][y - 1].GetComponent<Cell>().DrawBomb();
+        //ABAJO CENTRO
+        if (y > 0)
+            cellMatrix[x][y - 1].GetComponent<Cell>().DrawBomb();
+        //ABAJO DERECHA
+        if (x < width - 1 && y > 0)
+            cellMatrix[x + 1][y - 1].GetComponent<Cell>().DrawBomb();
+    }
+
+
+    /*/ Update is called once per frame
+    void Update()
+    {
+        
+    }*/
+}
