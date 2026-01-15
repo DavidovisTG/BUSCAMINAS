@@ -14,9 +14,18 @@ public class Generator : MonoBehaviour
     public static Generator instance;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    private void Start()
+    private void Awake()
     {
-        instance = this;
+        if (instance == null)
+        {
+            DontDestroyOnLoad(gameObject);
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+            instance = this;
+        }
     }
 
 
@@ -166,5 +175,10 @@ public class Generator : MonoBehaviour
             }
         }
         return array;
+    }
+
+    internal void Reset()
+    {
+        width = height = bombsCount = 0;
     }
 }
