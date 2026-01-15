@@ -47,6 +47,18 @@ public class GameManager : MonoBehaviour
         mainMenu.SetActive(false);
     }
 
+    public void GameOverWin()
+    {
+        Generator.instance.DestroyCellMatrix();
+        winMenu.SetActive(true);
+    }
+
+    public void GameOverLose()
+    {
+        Generator.instance.DestroyCellMatrix();
+        endMenu.SetActive(true);
+    }
+
     public void Restart()
     {
         Start();

@@ -1,4 +1,6 @@
 
+using NUnit.Framework;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -8,7 +10,6 @@ public class Generator : MonoBehaviour
     [SerializeField] private GameObject cell;
     [SerializeField] private int height, width, bombsCount;
     [SerializeField] private GameObject[][] cellMatrix;
-
 
     public static Generator instance;
 
@@ -20,20 +21,11 @@ public class Generator : MonoBehaviour
 
 
 
-    public void setWidth(int width)
-    {
-        this.width = width;
-    }
+    public void setWidth(int width) { this.width = width; }
 
-    public void setHeight(int height)
-    {
-        this.height = height;
-    }
+    public void setHeight(int height) { this.height = height; }
 
-    public void setBombsCount(int bombsNumber)
-    {
-        this.bombsCount = bombsNumber;
-    }
+    public void setBombsCount(int bombsNumber) { bombsCount = bombsNumber; }
 
 
     public int Validate()
@@ -137,10 +129,42 @@ public class Generator : MonoBehaviour
             cellMatrix[x + 1][y - 1].GetComponent<Cell>().DrawBomb();
     }
 
-
-    /*/ Update is called once per frame
-    void Update()
+    public void DestroyCellMatrix()
     {
-        
-    }*/
+        for (int i=0; i<cellMatrix.Length; i++)
+        {
+            for (int j=0; j<cellMatrix[i].Length; j++)
+            {
+                Destroy(cellMatrix[i][j]);
+            }
+        }
+    }
+    
+    public bool CheckBoardComplete()
+    {
+        foreach (GameObject[] i in cellMatrix)
+        {
+            foreach(GameObject j in i)
+            {
+                Cell cell = j.GetComponent<Cell>();
+                if (!cell.isSeen() && !cell.hasBomb()) return false;
+                if (!cell.isFlagged() && cell.hasBomb()) return false;
+            }
+        }
+        return true;
+    }
+
+    public List<Cell> GetBombedCells()
+    {
+        List<Cell> array = new();
+        foreach (GameObject[] i in cellMatrix)
+        {
+            foreach (GameObject j in i)
+            {
+                Cell cell = j.GetComponent<Cell>();
+                if (cell.hasBomb()) array.Add(cell);
+            }
+        }
+        return array;
+    }
 }

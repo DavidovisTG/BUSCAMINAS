@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -5,44 +7,65 @@ public class Cell : MonoBehaviour
 {
 
     [SerializeField] private int x, y;
-    [SerializeField] private bool bomb, seen;
+    [SerializeField] private bool bomb, seen, flagged;
 
+    [SerializeField] private Animator animator;
+
+    //INT SETTER: POSICION X/Y
     public void setX(int x) { this.x = x; }
-
     public void setY(int y) { this.y = y; }
+    //INT GETTER: POSICION X/Y
+    public int getX() { return x; }
+    public int getY() { return y; }
 
-    public void setBomb(bool hasBomb) { this.bomb = hasBomb; }
+    //BOOLEAN S/G: CELDA TIENE BOMBA
+    public void setBomb(bool hasBomb) { bomb = hasBomb; }
+    public bool hasBomb() { return bomb; }
 
-    public int getX() { return this.x; }
-    public int getY() { return this.y; }
-    public bool hasBomb() { return this.bomb; }
+    //BOOLEAN S/G: CELDA MARCADA CON BANDERA
+    public void setFlag(bool flagged) { this.flagged = flagged; }
+    public bool isFlagged() { return flagged; }
 
-    public bool isSeen() { return this.seen; }
+    //BOOLEAN S/G: CELDA YA DESCUBIERTA
+    public bool isSeen() { return seen; }
     public void setSeen(bool seen) { this.seen = seen; }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        //OCULTAR SPRITE DE BOMBA, DE BANDERA
+        transform.GetChild(1).gameObject.SetActive(false);
+        transform.GetChild(2).gameObject.SetActive(false);
     }
 
+    //DESCUBRIR CELDA CUANDO CLIC IZQD.
     private void OnMouseDown()
     {
-        if (!GameManager.instance.gameOver)
-            DrawBomb();
+        //SI EL JUEGO YA ESTA TERMINADO
+        if (GameManager.instance.gameOver) return;
+
+        //CLIC IZQD.
+        DrawBomb();
     }
 
 
 
-    //Dibujar bandera con clic secundario
+    //FLAG BOMB WHEN RIGHT CLICKED
     private void OnMouseOver()
     {
-        if (Input.GetMouseButtonDown(1))
-        {
-            //Poner banderita en casilla
-        }
+        if (GameManager.instance.gameOver) return;
+        if (isSeen()) return;
+        if (Input.GetMouseButtonDown(1)) { FlagCell(); }//IF RIGHT CLICK
     }
 
+    public void FlagCell()
+    {
+        //Added "flag" sprite
+        setFlag(!isFlagged());
+        transform.GetChild(2).gameObject.SetActive(isFlagged());
+
+        if (!isFlagged()) return;
+        if (Generator.instance.CheckBoardComplete()) StartCoroutine(WaitThenWinScreen());
+    }
 
     public void DrawBomb()
     {
@@ -51,13 +74,22 @@ public class Cell : MonoBehaviour
             setSeen(true);
             if (hasBomb())
             {
+                //Change color to red
                 GetComponent<SpriteRenderer>().material.color = Color.red;
-                transform.GetChild(1).gameObject.SetActive(true);
-                
-                //Añadir sprite de bomba
 
-                //Terminar juego
+                //Show bomb sprites
+                foreach (Cell c in Generator.instance.GetBombedCells())
+                {
+                    c.transform.GetChild(1).gameObject.SetActive(true);
+                }
+
+                //Animate explosion
+                ExplodeAnimation();
+
+                //End game
                 GameManager.instance.gameOver = true;
+                StartCoroutine(WaitThenLoseScreen());
+
             }
             else
             {
@@ -69,14 +101,29 @@ public class Cell : MonoBehaviour
                 else
                     transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = bombs.ToString();
 
+                if (Generator.instance.CheckBoardComplete()) StartCoroutine(WaitThenWinScreen());
             }
         }
-            
     }
 
-    /*/ Update is called once per frame
-    void Update()
+    private IEnumerator WaitThenLoseScreen()
     {
-        
-    }*/
+        yield return new WaitForSecondsRealtime(2F);
+        GameManager.instance.GameOverLose();
+    }
+
+    private IEnumerator WaitThenWinScreen()
+    {
+        foreach (Cell c in Generator.instance.GetBombedCells())
+        {
+            c.GetComponent<SpriteRenderer>().material.color = Color.green;
+        }
+        yield return new WaitForSecondsRealtime(2F);
+        GameManager.instance.GameOverWin();
+    }
+
+    void ExplodeAnimation()
+    {
+        animator.SetTrigger("Explode");
+    }
 }
