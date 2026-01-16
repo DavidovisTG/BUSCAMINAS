@@ -40,8 +40,8 @@ public class Generator : MonoBehaviour
     public int Validate()
     {
         int errorCode = 0;
-        if (width <= 1) errorCode += 4;
-        if (height <= 1)errorCode += 2;
+        if (width <= 1 || width > 17) errorCode += 4;
+        if (height <= 1 || height > 10)errorCode += 2;
         if (bombsCount <= 0 || bombsCount >= width * height) errorCode += 1;
 
         return errorCode;

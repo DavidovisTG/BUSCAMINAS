@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -10,6 +9,8 @@ public class Cell : MonoBehaviour
     [SerializeField] private bool bomb, seen, flagged;
 
     [SerializeField] private Animator animator;
+    [SerializeField] private AudioSource explosionSound;
+    [SerializeField] private AudioSource clearedSound;
 
     //INT SETTER: POSICION X/Y
     public void setX(int x) { this.x = x; }
@@ -54,7 +55,9 @@ public class Cell : MonoBehaviour
     {
         if (GameManager.instance.gameOver) return;
         if (isSeen()) return;
-        if (Input.GetMouseButtonDown(1)) { FlagCell(); }//IF RIGHT CLICK
+
+        //IF RIGHT CLICK
+        if (Input.GetMouseButtonDown(1)) { FlagCell(); }
     }
 
     public void FlagCell()
@@ -64,7 +67,7 @@ public class Cell : MonoBehaviour
         transform.GetChild(2).gameObject.SetActive(isFlagged());
 
         if (!isFlagged()) return;
-        if (Generator.instance.CheckBoardComplete()) StartCoroutine(WaitThenWinScreen());
+        if (Generator.instance.CheckBoardComplete()) StartCoroutine(WinAndWaitToWinScreen());
     }
 
     public void DrawBomb()
@@ -74,25 +77,16 @@ public class Cell : MonoBehaviour
             setSeen(true);
             if (hasBomb())
             {
-                //Change color to red
-                GetComponent<SpriteRenderer>().material.color = Color.red;
-
-                //Show bomb sprites
-                foreach (Cell c in Generator.instance.GetBombedCells())
-                {
-                    c.transform.GetChild(1).gameObject.SetActive(true);
-                }
-
-                //Animate explosion
-                ExplodeAnimation();
-
                 //End game
                 GameManager.instance.gameOver = true;
-                StartCoroutine(WaitThenLoseScreen());
+                StartCoroutine(LoseAndWaitToLoseScreen());
 
             }
             else
             {
+                //HIDE DIAMOND IN CASE ITS FLAGGED
+                transform.GetChild(2).gameObject.SetActive(false);
+
                 //Cambiar a color oscuro
                 GetComponent<SpriteRenderer>().material.color = Color.grey;
                 int bombs = Generator.instance.GetBombsAround(x, y);
@@ -101,29 +95,48 @@ public class Cell : MonoBehaviour
                 else
                     transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = bombs.ToString();
 
-                if (Generator.instance.CheckBoardComplete()) StartCoroutine(WaitThenWinScreen());
+                if (Generator.instance.CheckBoardComplete()) StartCoroutine(WinAndWaitToWinScreen());
             }
         }
     }
 
-    private IEnumerator WaitThenLoseScreen()
+    private IEnumerator LoseAndWaitToLoseScreen()
     {
+        //COLOR OF PRESSED MINED CELL TO RED
+        GetComponent<SpriteRenderer>().material.color = Color.red;
+
+        //For each mined cell
+        foreach (Cell c in Generator.instance.GetBombedCells())
+        {
+            //SHOW ITS BOMB
+            c.transform.GetChild(1).gameObject.SetActive(true);
+
+            //HIDE DIAMOND IN CASE IT WAS FLAGGED
+            c.transform.GetChild(2).gameObject.SetActive(false);
+        }
+
+        //ANIMATE EXPLOSION OF PRESSED MINED CELL
+        animator.SetTrigger("Explode");
+        
+        //EXPLOSION SOUND
+        explosionSound.Play();
+
         yield return new WaitForSecondsRealtime(2F);
         GameManager.instance.GameOverLose();
     }
 
-    private IEnumerator WaitThenWinScreen()
+    private IEnumerator WinAndWaitToWinScreen()
     {
+        //CHANGE COLOR TO GREEN TO ALL BOMBED CELLS
         foreach (Cell c in Generator.instance.GetBombedCells())
         {
             c.GetComponent<SpriteRenderer>().material.color = Color.green;
         }
+
+        //CLEARED STAGE SOUND
+        clearedSound.Play();
+
         yield return new WaitForSecondsRealtime(2F);
         GameManager.instance.GameOverWin();
-    }
-
-    void ExplodeAnimation()
-    {
-        animator.SetTrigger("Explode");
     }
 }
