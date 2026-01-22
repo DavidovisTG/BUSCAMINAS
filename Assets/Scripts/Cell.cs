@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -9,8 +10,6 @@ public class Cell : MonoBehaviour
     [SerializeField] private bool bomb, seen, flagged;
 
     [SerializeField] private Animator animator;
-    [SerializeField] private AudioSource explosionSound;
-    [SerializeField] private AudioSource clearedSound;
 
     //INT SETTER: POSICION X/Y
     public void setX(int x) { this.x = x; }
@@ -67,7 +66,7 @@ public class Cell : MonoBehaviour
         transform.GetChild(2).gameObject.SetActive(isFlagged());
 
         if (!isFlagged()) return;
-        if (Generator.instance.CheckBoardComplete()) StartCoroutine(WinAndWaitToWinScreen());
+        Generator.instance.CheckBoardComplete();
     }
 
     public void DrawBomb()
@@ -95,7 +94,7 @@ public class Cell : MonoBehaviour
                 else
                     transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = bombs.ToString();
 
-                if (Generator.instance.CheckBoardComplete()) StartCoroutine(WinAndWaitToWinScreen());
+                Generator.instance.CheckBoardComplete();
             }
         }
     }
@@ -119,24 +118,10 @@ public class Cell : MonoBehaviour
         animator.SetTrigger("Explode");
         
         //EXPLOSION SOUND
-        explosionSound.Play();
+        //explosionSound.Play();
 
         yield return new WaitForSecondsRealtime(2F);
         GameManager.instance.GameOverLose();
     }
 
-    private IEnumerator WinAndWaitToWinScreen()
-    {
-        //CHANGE COLOR TO GREEN TO ALL BOMBED CELLS
-        foreach (Cell c in Generator.instance.GetBombedCells())
-        {
-            c.GetComponent<SpriteRenderer>().material.color = Color.green;
-        }
-
-        //CLEARED STAGE SOUND
-        clearedSound.Play();
-
-        yield return new WaitForSecondsRealtime(2F);
-        GameManager.instance.GameOverWin();
-    }
 }
