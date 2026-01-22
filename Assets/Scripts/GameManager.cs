@@ -9,8 +9,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject inputErrorScreen;
     [SerializeField] GameObject winMenu;
 
-    [SerializeField] private AIController controller;
-
     public static GameManager instance;
 
     public bool gameOver;
@@ -45,19 +43,16 @@ public class GameManager : MonoBehaviour
             Generator.instance.setHeight(int.Parse(MainMenu.instance.height_Input.GetComponentInChildren<TMP_InputField>().text.ToString()));
             Generator.instance.setBombsCount(int.Parse(MainMenu.instance.bombsCount_Input.GetComponentInChildren<TMP_InputField>().text.ToString()));
             if (Generator.instance.Validate() == 0)
-            {   
                 Generator.instance.Generate();
-                StartCoroutine(controller.Play());
-            }
             else inputErrorScreen.SetActive(true);
-            mainMenu.SetActive(false);
 
-        }
-        catch (Exception e)
+            mainMenu.SetActive(false);
+        } catch (Exception e)
         {
             inputErrorScreen.SetActive(true);
             mainMenu.SetActive(false);
         }
+        
     }
 
     public void GameOverWin()

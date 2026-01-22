@@ -1,6 +1,5 @@
 
 using NUnit.Framework;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -11,9 +10,6 @@ public class Generator : MonoBehaviour
     [SerializeField] private GameObject cell;
     [SerializeField] private int height, width, bombsCount;
     [SerializeField] private GameObject[][] cellMatrix;
-
-    [SerializeField] private AudioSource clearSound;
-    [SerializeField] private AudioSource explosionSound;
 
     public static Generator instance;
 
@@ -33,6 +29,7 @@ public class Generator : MonoBehaviour
     }
 
 
+
     public void setWidth(int width) { this.width = width; }
 
     public void setHeight(int height) { this.height = height; }
@@ -49,6 +46,7 @@ public class Generator : MonoBehaviour
 
         return errorCode;
     }
+
 
     public void Generate()
     {
@@ -112,171 +110,6 @@ public class Generator : MonoBehaviour
         return cont;
     }
 
-    public int GetUndiscoveredAdjacents(int x, int y)
-    {
-        int cont = 0;
-        //ARRIBA IZQUIERDA
-        if (x > 0 && y < height - 1 && !cellMatrix[x - 1][y + 1].GetComponent<Cell>().isSeen())
-            cont++;
-        //ARRIBA CENTRO
-        if (y < height - 1 && !cellMatrix[x][y + 1].GetComponent<Cell>().isSeen())
-            cont++;
-        //ARRIBA DERECHA
-        if (x < width - 1 && y < height - 1 && !cellMatrix[x + 1][y + 1].GetComponent<Cell>().isSeen())
-            cont++;
-        //CENTRO IZQUIERDA
-        if (x > 0 && !cellMatrix[x - 1][y].GetComponent<Cell>().isSeen())
-            cont++;
-        //CENTRO DERECHA
-        if (x < width - 1 && !cellMatrix[x + 1][y].GetComponent<Cell>().isSeen())
-            cont++;
-        //ABAJO IZQUIERDA
-        if (x > 0 && y > 0 && !cellMatrix[x - 1][y - 1].GetComponent<Cell>().isSeen())
-            cont++;
-        //ABAJO CENTRO
-        if (y > 0 && !cellMatrix[x][y - 1].GetComponent<Cell>().isSeen())
-            cont++;
-        //ABAJO DERECHA
-        if (x < width - 1 && y > 0 && !cellMatrix[x + 1][y - 1].GetComponent<Cell>().isSeen())
-            cont++;
-
-        return cont;
-    }
-
-    public int GetFlaggedAdjacentTo(int x, int y)
-    {
-        int cont = 0;
-        //ARRIBA IZQUIERDA
-        if (x > 0 && y < height - 1 && cellMatrix[x - 1][y + 1].GetComponent<Cell>().isFlagged())
-            cont++;
-        //ARRIBA CENTRO
-        if (y < height - 1 && cellMatrix[x][y + 1].GetComponent<Cell>().isFlagged())
-            cont++;
-        //ARRIBA DERECHA
-        if (x < width - 1 && y < height - 1 && cellMatrix[x + 1][y + 1].GetComponent<Cell>().isFlagged())
-            cont++;
-        //CENTRO IZQUIERDA
-        if (x > 0 && cellMatrix[x - 1][y].GetComponent<Cell>().isFlagged())
-            cont++;
-        //CENTRO DERECHA
-        if (x < width - 1 && cellMatrix[x + 1][y].GetComponent<Cell>().isFlagged())
-            cont++;
-        //ABAJO IZQUIERDA
-        if (x > 0 && y > 0 && cellMatrix[x - 1][y - 1].GetComponent<Cell>().isFlagged())
-            cont++;
-        //ABAJO CENTRO
-        if (y > 0 && cellMatrix[x][y - 1].GetComponent<Cell>().isFlagged())
-            cont++;
-        //ABAJO DERECHA
-        if (x < width - 1 && y > 0 && cellMatrix[x + 1][y - 1].GetComponent<Cell>().isFlagged())
-            cont++;
-
-        return cont;
-    }
-
-    internal void DrawBombsAdjacentTo(int x, int y)
-    {
-        //ARRIBA IZQUIERDA
-        if (x > 0 && y < height - 1 && !cellMatrix[x - 1][y + 1].GetComponent<Cell>().isSeen()
-                                    && !cellMatrix[x - 1][y + 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x - 1][y + 1].GetComponent<Cell>().DrawBomb();
-        //ARRIBA CENTRO
-        if (y < height - 1 && !cellMatrix[x][y + 1].GetComponent<Cell>().isSeen()
-                           && !cellMatrix[x][y + 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x][y + 1].GetComponent<Cell>().DrawBomb();
-        //ARRIBA DERECHA
-        if (x < width - 1 && y < height - 1 && !cellMatrix[x + 1][y + 1].GetComponent<Cell>().isSeen()
-                                            && !cellMatrix[x + 1][y + 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x + 1][y + 1].GetComponent<Cell>().DrawBomb();
-        //CENTRO IZQUIERDA
-        if (x > 0 && !cellMatrix[x - 1][y].GetComponent<Cell>().isSeen()
-                  && !cellMatrix[x - 1][y].GetComponent<Cell>().isFlagged())
-            cellMatrix[x - 1][y].GetComponent<Cell>().DrawBomb();
-        //CENTRO DERECHA
-        if (x < width - 1 && !cellMatrix[x + 1][y].GetComponent<Cell>().isSeen()
-                          && !cellMatrix[x + 1][y].GetComponent<Cell>().isFlagged())
-            cellMatrix[x + 1][y].GetComponent<Cell>().DrawBomb();
-        //ABAJO IZQUIERDA
-        if (x > 0 && y > 0 && !cellMatrix[x - 1][y - 1].GetComponent<Cell>().isSeen()
-                           && !cellMatrix[x - 1][y - 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x - 1][y - 1].GetComponent<Cell>().DrawBomb();
-        //ABAJO CENTRO
-        if (y > 0 && !cellMatrix[x][y - 1].GetComponent<Cell>().isSeen()
-                  && !cellMatrix[x][y - 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x][y - 1].GetComponent<Cell>().DrawBomb();
-        //ABAJO DERECHA
-        if (x < width - 1 && y > 0 && !cellMatrix[x + 1][y - 1].GetComponent<Cell>().isSeen()
-                                   && !cellMatrix[x + 1][y - 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x + 1][y - 1].GetComponent<Cell>().DrawBomb();
-    }
-    internal void FlagCellsAdjacentTo(int x, int y)
-    {
-        //ARRIBA IZQUIERDA
-        if (x > 0 && y < height - 1 && !cellMatrix[x - 1][y + 1].GetComponent<Cell>().isSeen()
-                                    && !cellMatrix[x - 1][y + 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x - 1][y + 1].GetComponent<Cell>().FlagCell();
-        //ARRIBA CENTRO
-        if (y < height - 1 && !cellMatrix[x][y + 1].GetComponent<Cell>().isSeen()
-                           && !cellMatrix[x][y + 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x][y + 1].GetComponent<Cell>().FlagCell();
-        //ARRIBA DERECHA
-        if (x < width - 1 && y < height - 1 && !cellMatrix[x + 1][y + 1].GetComponent<Cell>().isSeen()
-                                            && !cellMatrix[x + 1][y + 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x + 1][y + 1].GetComponent<Cell>().FlagCell();
-        //CENTRO IZQUIERDA
-        if (x > 0 && !cellMatrix[x - 1][y].GetComponent<Cell>().isSeen()
-                  && !cellMatrix[x - 1][y].GetComponent<Cell>().isFlagged())
-            cellMatrix[x - 1][y].GetComponent<Cell>().FlagCell();
-        //CENTRO DERECHA
-        if (x < width - 1 && !cellMatrix[x + 1][y].GetComponent<Cell>().isSeen()
-                          && !cellMatrix[x + 1][y].GetComponent<Cell>().isFlagged())
-            cellMatrix[x + 1][y].GetComponent<Cell>().FlagCell();
-        //ABAJO IZQUIERDA
-        if (x > 0 && y > 0 && !cellMatrix[x - 1][y - 1].GetComponent<Cell>().isSeen()
-                           && !cellMatrix[x - 1][y - 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x - 1][y - 1].GetComponent<Cell>().FlagCell();
-        //ABAJO CENTRO
-        if (y > 0 && !cellMatrix[x][y - 1].GetComponent<Cell>().isSeen()
-                  && !cellMatrix[x][y - 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x][y - 1].GetComponent<Cell>().FlagCell();
-        //ABAJO DERECHA
-        if (x < width - 1 && y > 0 && !cellMatrix[x + 1][y - 1].GetComponent<Cell>().isSeen()
-                                   && !cellMatrix[x + 1][y - 1].GetComponent<Cell>().isFlagged())
-            cellMatrix[x + 1][y - 1].GetComponent<Cell>().FlagCell();
-    }
-
-    public int GetPossibleAdjacents(int x, int y)
-    {
-        int cont = 0;
-        //ARRIBA IZQUIERDA
-        if (x > 0 && y < height - 1)
-            cont++;
-        //ARRIBA CENTRO
-        if (y < height - 1)
-            cont++;
-        //ARRIBA DERECHA
-        if (x < width - 1 && y < height - 1)
-            cont++;
-        //CENTRO IZQUIERDA
-        if (x > 0)
-            cont++;
-        //CENTRO DERECHA
-        if (x < width - 1)
-            cont++;
-        //ABAJO IZQUIERDA
-        if (x > 0 && y > 0)
-            cont++;
-        //ABAJO CENTRO
-        if (y > 0)
-            cont++;
-        //ABAJO DERECHA
-        if (x < width - 1 && y > 0)
-            cont++;
-
-        return cont;
-    }
-
-
     public void CheckPiecesAround(int x, int y)
     {
         //ARRIBA IZQUIERDA
@@ -316,19 +149,18 @@ public class Generator : MonoBehaviour
         }
     }
     
-    public void CheckBoardComplete()
+    public bool CheckBoardComplete()
     {
         foreach (GameObject[] i in cellMatrix)
         {
             foreach(GameObject j in i)
             {
                 Cell cell = j.GetComponent<Cell>();
-                if (!cell.isSeen() && !cell.hasBomb()) return;
-                if (!cell.isFlagged() && cell.hasBomb()) return;
+                if (!cell.isSeen() && !cell.hasBomb()) return false;
+                if (!cell.isFlagged() && cell.hasBomb()) return false;
             }
         }
-        StartCoroutine(WinAndWaitToWinScreen());
-        GameManager.instance.gameOver = true;
+        return true;
     }
 
     public List<Cell> GetBombedCells()
@@ -345,28 +177,8 @@ public class Generator : MonoBehaviour
         return array;
     }
 
-    public GameObject[][] ReturnMatrix()
-    {
-        return cellMatrix;
-    }
-
     internal void Reset()
     {
         width = height = bombsCount = 0;
-    }
-
-    private IEnumerator WinAndWaitToWinScreen()
-    {
-        //CHANGE COLOR TO GREEN TO ALL BOMBED CELLS
-        foreach (Cell c in GetBombedCells())
-        {
-            c.GetComponent<SpriteRenderer>().material.color = Color.green;
-        }
-
-        //CLEARED STAGE SOUND
-        clearSound.Play();
-
-        yield return new WaitForSecondsRealtime(2F);
-        GameManager.instance.GameOverWin();
     }
 }
